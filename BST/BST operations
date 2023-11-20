@@ -97,19 +97,17 @@ void inorder(struct node *root) {
 }
 
 int main() {
-  struct node *root;
-  root = new_node(20);
-  insert(root, 5);
-  insert(root, 1);
-  insert(root, 15);
-  insert(root, 9);
-  insert(root, 7);
-  insert(root, 12);
-  insert(root, 30);
-  insert(root, 25);
-  insert(root, 40);
-  insert(root, 45);
-  insert(root, 42);
+   struct node* root = NULL;
+    int n, value;
+
+    printf("Enter the number of nodes: ");
+    scanf("%d", &n);
+
+    printf("Enter the values of the nodes:\n");
+    for (int i = 0; i < n; ++i) {
+        scanf("%d", &value);
+        root = insert(root, value);
+  }
 
   inorder(root);
   printf("\n");
