@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
 struct Tree {
     int val;
     int count;
@@ -499,18 +500,54 @@ void display(struct Tree* root)
     }
 }
 
-int check_bst(struct Tree* root) 
+int check_bst(struct Tree* root,int min,int max)
 {
 	if(root == NULL) {
 		return 1;
 	}
-	if(root->left && root->val > root->left->val) {
-		check_bst(root->left);
+	if(root->val < min || root->val > max) {
+        return 0;
 	}
-	else if(root->right && root->val <= root->right->val) {
-		check_bst(root->right);
-	}
-	return 0;
+	return check_bst(root->left,min,(root->val)-1) && check_bst(root->right,(root->val)+1,max);
+}
+
+// Function to delete a node in the BST
+struct Tree* deleteNode(struct Tree* root, int key) {
+    if (root == NULL) {
+        return root;
+    }
+
+    // Traverse the tree to find the node to be deleted
+    if (key < root->val) {
+        root->left = deleteNode(root->left, key);
+    } else if (key > root->val) {
+        root->right = deleteNode(root->right, key);
+    } else {
+        // Node with only one child or no child
+        if (root->left == NULL) {
+            struct Tree* temp = root->right;
+            free(root);
+            return temp;
+        } else if (root->right == NULL) {
+            struct Tree* temp = root->left;
+            free(root);
+            return temp;
+        }
+
+        // Node with two children: Get the inorder successor (smallest
+        // in the right subtree)
+        struct Tree* temp = root->right;
+        while (temp->left != NULL) {
+            temp = temp->left;
+        }
+
+        // Copy the inorder successor's data to this node
+        root->val = temp->val;
+
+        // Delete the inorder successor
+        root->right = deleteNode(root->right, temp->val);
+    }
+    return root;
 }
 
 int main()
@@ -547,16 +584,18 @@ int main()
     }
     root = make_tree(n,inorder,postorder,map,0,n-1,0,n-1);
     preorder(root);*/
-    /*for(int i=0;i<n;i++) {
+    for(int i=0;i<n;i++) {
         scanf("%d",&val);
         root = insert(root,val);
-    }*/
-    int values[n];
+    }
+    /*deleteNode(root,5);
+    inorder(root);*/
+    /*int values[n];
     for(int i=0;i<n;i++) {
         scanf("%d",&val);
         values[i]=val;
     }
-    root = insertLevelOrder(values, root, 0, n);
+    root = insertLevelOrder(values, root, 0, n);*/
     /*int sum = 0;
     int k;
     scanf("%d",&k);
@@ -564,12 +603,13 @@ int main()
     /*inorder(root);*/
     /*display(root);
     printf("\n");*/
-    preorder(root);
-    if(check_bst(root)) {
-    	printf("BST");
+    /*preorder(root);
+    printf("\n");
+    if(check_bst(root,INT_MIN,INT_MAX)) {
+    	printf("BST \n");
     } else {
-    	printf("Not a BST");
-    }
+    	printf("Not a BST \n");
+    }*/
     /*printLevelOrder(root);*/
     /*inorder_1(root,0);*/
     /*int key1,key2;
