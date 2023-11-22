@@ -62,6 +62,16 @@ int totalInternalNodes(struct Tree* tree)
         return (totalInternalNodes(tree->left) + totalInternalNodes(tree->right) + 1);
         }
 }
+
+//function to find the minimum value in a node
+struct Tree* find_minimum(struct Tree* root) {
+  if (root == NULL)
+    return NULL;
+  else if (root -> left != NULL) // node with minimum value will have no left child
+    return find_minimum(root -> left); // left most element will be minimum
+  return root;
+}
+
 // Function to insert values level-wise into the binary tree
 struct Tree* insertLevelOrder(int arr[], struct Tree* root, int i, int n) {
     if (i < n) {
