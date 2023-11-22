@@ -23,11 +23,28 @@ struct Tree* insert(struct Tree* root, int val)
         return new_node(val);
     }
     else {
-        if(root->val >= val) {
+         if (val == root->val) {
+       		(root->count)++;
+   	 }
+        else if(root->val > val) {
             root->left=insert(root->left,val);
         }
         else
             root->right=insert(root->right,val);
+    }
+    return root;
+}
+
+// Function to insert values level-wise into the binary tree
+struct Tree* insertLevelOrder(int arr[], struct Tree* root, int i, int n) {
+    if (i < n) {
+        root = new_node(arr[i]);
+
+        // Insert left child
+        root->left = insertLevelOrder(arr, root->left, 2 * i + 1, n);
+
+        // Insert right child
+        root->right = insertLevelOrder(arr, root->right, 2 * i + 2, n);
     }
     return root;
 }
@@ -354,24 +371,32 @@ void inorder_1(struct Tree* root,int depth)
     inorder_1(root->right,depth + 1);
 }
 
-void inorder2(struct Tree* root)
-{
-    if(root == NULL) {
-        return;
+// Function to perform in-order traversal, print unique values, and delete duplicates
+struct Tree* removeDuplicates(struct Tree* root, int* prevValue) {
+    if (root == NULL) {
+        return NULL;
     }
-    inorder2(root->left);
-    deleteNode(root,root->val);
-    inorder2(root->right);
-}
 
+    // Recursively process left subtree
+    root->left = removeDuplicates(root->left, prevValue);
 
-// Function to print level order traversal a tree
-void printLevelOrder(struct Tree* root)
-{
-    int h = height(root);
-    int i;
-    for (i = 1; i <= h; i++)
-        printCurrentLevel(root, i);
+    // Check if the current node has the same value as the previous node
+    if (*prevValue == root->val) {
+        // Delete the duplicate node
+        free(root);
+        return NULL;
+    }
+
+    // Print the unique value
+    printf("%d ", root->val);
+
+    // Update the previous value to the current node's value
+    *prevValue = root->val;
+
+    // Recursively process right subtree
+    root->right = removeDuplicates(root->right, prevValue);
+
+    return root;
 }
 
 // Print nodes at a current level
@@ -408,6 +433,15 @@ int height(struct Tree* node)
     }
 }
 
+// Function to print level order traversal a tree
+void printLevelOrder(struct Tree* root)
+{
+    int h = height(root);
+    int i;
+    for (i = 1; i <= h; i++)
+        printCurrentLevel(root, i);
+}
+
 // Function to perform post-order traversal and truncate nodes
 struct Tree* pruneNodes(struct Tree* root, int k, int *sum) {
     if (root == NULL)
@@ -429,77 +463,54 @@ struct Tree* pruneNodes(struct Tree* root, int k, int *sum) {
     return root;
 }
 
-
-/* Given a non-empty binary search tree, return the node with
-   minimum key value found in that tree. Note that the entire
-   tree does not need to be searched. */
-struct Tree * minValueNode(struct Tree* node)
+//function to delete the duplicate element
+struct Tree* Delete(struct Tree* root,int value)
 {
-    struct Tree* current = node;
 
-    /* loop down to find the leftmost leaf */
-    while (current->left != NULL)
-        current = current->left;
+	if(root==NULL)
+		return root;
+	else if(value< root->val)
+	{
+		root->left= Delete(root->left,value);
+	}
+	else if(value> root->val)
+	{
+		root->right= Delete(root->right,value);
+	}
 
-    return current;
+
+	return root;
+
+}
+//function to display all the element present in the binary search tree and call Delete()
+void display(struct Tree* root)
+{
+    if (root != NULL)
+    {
+        display(root->left);
+        if(root->count>1)
+       {
+           Delete(root,root->val);
+       }
+       else
+        printf("%d ",root->val);
+        display(root->right);
+
+    }
 }
 
-/* Given a binary search tree and a key, this function
-   deletes a given key and returns root of modified tree */
-struct Tree* deleteNode(struct Tree* root, int key)
+int check_bst(struct Tree* root) 
 {
-    // base case
-    if (root == NULL) return root;
-
-    // If the key to be deleted is smaller than the
-    // root's key, then it lies in left subtree
-    if (key < root->val)
-        root->left = deleteNode(root->left, key);
-
-    // If the key to be deleted is greater than the root's key,
-    // then it lies in right subtree
-    else if (key > root->key)
-        root->right = deleteNode(root->right, key);
-
-    // if key is same as root's key
-    else
-    {
-        // If key is present more than once, simply decrement
-        // count and return
-        if (root->count > 1)
-        {
-           (root->count)--;
-           return root;
-        }
-
-        // ElSE, delete the node
-
-        // node with only one child or no child
-        if (root->left == NULL)
-        {
-            struct node *temp = root->right;
-            free(root);
-            return temp;
-        }
-        else if (root->right == NULL)
-        {
-            struct Tree *temp = root->left;
-            free(root);
-            return temp;
-        }
-
-        // node with two children: Get the inorder successor (smallest
-        // in the right subtree)
-        struct Tree* temp = minValueNode(root->right);
-
-        // Copy the inorder successor's content to this node
-        root->val = temp->val;
-        root->count = temp->count;
-
-        // Delete the inorder successor
-        root->right = deleteNode(root->right, temp->val);
-    }
-    return root;
+	if(root == NULL) {
+		return 1;
+	}
+	if(root->left && root->val > root->left->val) {
+		check_bst(root->left);
+	}
+	else if(root->right && root->val <= root->right->val) {
+		check_bst(root->right);
+	}
+	return 0;
 }
 
 int main()
@@ -536,17 +547,29 @@ int main()
     }
     root = make_tree(n,inorder,postorder,map,0,n-1,0,n-1);
     preorder(root);*/
-    for(int i=0;i<n;i++) {
+    /*for(int i=0;i<n;i++) {
         scanf("%d",&val);
         root = insert(root,val);
+    }*/
+    int values[n];
+    for(int i=0;i<n;i++) {
+        scanf("%d",&val);
+        values[i]=val;
     }
+    root = insertLevelOrder(values, root, 0, n);
     /*int sum = 0;
     int k;
     scanf("%d",&k);
     root = pruneNodes(root, k, &sum);*/
     /*inorder(root);*/
-    inorder2(root);
-    inorder(root);
+    /*display(root);
+    printf("\n");*/
+    preorder(root);
+    if(check_bst(root)) {
+    	printf("BST");
+    } else {
+    	printf("Not a BST");
+    }
     /*printLevelOrder(root);*/
     /*inorder_1(root,0);*/
     /*int key1,key2;
