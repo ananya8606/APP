@@ -36,6 +36,32 @@ struct Tree* insert(struct Tree* root, int val)
     return root;
 }
 
+int totalNodes(struct Tree* tree)
+{
+    if (tree == NULL)
+        return 0;
+    else
+        return (totalNodes(tree->left) + totalNodes(tree->right) + 1);
+}
+//todo External Nodes (recursion)--9
+int totalExternalNodes(struct Tree* tree)
+{
+    if (tree == NULL)
+        return 0;
+    else if ((tree->left == NULL) && (tree->right == NULL))
+        return 1;
+    else
+        return (totalExternalNodes(tree->left) + totalExternalNodes(tree->right));
+}
+//todo Internal Nodes (recursion)--10
+int totalInternalNodes(struct Tree* tree)
+{
+    if ((tree == NULL) || ((tree->left == NULL) && (tree->right == NULL)))
+        return 0;
+    else {
+        return (totalInternalNodes(tree->left) + totalInternalNodes(tree->right) + 1);
+        }
+}
 // Function to insert values level-wise into the binary tree
 struct Tree* insertLevelOrder(int arr[], struct Tree* root, int i, int n) {
     if (i < n) {
@@ -588,6 +614,9 @@ int main()
         scanf("%d",&val);
         root = insert(root,val);
     }
+    printf("Total Nodes: %d ",totalNodes(root));
+    printf("Total Internal Nodes: %d ",totalInternalNodes(root));
+    printf("Total External Nodes: %d ",totalExternalNodes(root));
     /*deleteNode(root,5);
     inorder(root);*/
     /*int values[n];
