@@ -1,156 +1,145 @@
 #include <stdio.h>
 #include <stdlib.h>
-//Breadth First Search
-struct AdjListNode
-{
-	int dest;
-	struct AdjListNode* next;
+
+#define MAX_VERTICES 5
+
+// Node for adjacency list
+struct Node {
+    int data;
+    struct Node* next;
 };
 
-struct Queue
-{
-	int data;
-	struct Queue* next;
-};
-struct Queue *front,*rear = NULL;
-
-struct AdjList
-{
-	struct AdjListNode *head;
+// Queue node
+struct QueueNode {
+    int data;
+    struct QueueNode* next;
 };
 
-struct Graph
-{
-	int v;
-	struct AdjList* array;
-	
+// Queue structure
+struct Queue {
+    struct QueueNode *front, *rear;
 };
 
-int pfront()
-{
-	if(front==NULL)
-		return NULL;
+// Graph structure
+struct Graph {
+    int vertices;
+    struct Node** adjList;
+};
 
-	return front->data;
+// Function to create a new node for adjacency list
+struct Node* newAdjNode(int dest) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = dest;
+    newNode->next = NULL;
+    return newNode;
 }
 
-int isempty()
-{
-	if(front==NULL)
-		return 1;
-
-	else
-		return 0;
+// Function to initialize a new queue
+struct Queue* createQueue() {
+    struct Queue* q = (struct Queue*)malloc(sizeof(struct Queue));
+    q->front = q->rear = NULL;
+    return q;
 }
 
-void dequeue()
-{
-	if(isempty())
-		return;
-
-	struct Queue* temp = front;
-	front = front->next;
-
-	free(temp);
+// Function to check if the queue is empty
+int isEmpty(struct Queue* q) {
+    return (q->front == NULL);
 }
 
-void enqueue(int data)
-{
-	struct Queue* temp = (struct Queue*)malloc(sizeof(struct Queue));
-	temp->data = data;
-	temp->next =NULL;
+// Function to enqueue a data into the queue
+void enqueue(struct Queue* q, int data) {
+    struct QueueNode* temp = (struct QueueNode*)malloc(sizeof(struct QueueNode));
+    temp->data = data;
+    temp->next = NULL;
 
-	if(isempty())
-	{
-		front = rear = temp;
-	}
+    if (isEmpty(q)) {
+        q->front = q->rear = temp;
+        return;
+    }
 
-	else
-	{
-		rear->next = temp;
-		rear = temp;
-	}
+    q->rear->next = temp;
+    q->rear = temp;
 }
 
-struct AdjListNode* newAdjListNode(int dest)
-{
-	struct AdjListNode* new = (struct AdjListNode*)malloc(sizeof(struct AdjListNode));
-	new->dest = dest;
-	new->next = NULL;
+// Function to dequeue a data from the queue
+int dequeue(struct Queue* q) {
+    if (isEmpty(q))
+        return -1;
 
-	return new;
+    struct QueueNode* temp = q->front;
+    int data = temp->data;
+    q->front = temp->next;
+
+    free(temp);
+    return data;
 }
 
-struct Graph* createGrpah(int v)
-{
-	struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
-	graph->v = v;
-	graph->array = (struct AdjList*)malloc(sizeof(struct AdjList)*v);
+// Function to perform Breadth-First Search
+void BFS(struct Graph* graph, int startVertex) {
+    struct Queue* q = createQueue();
+    int* visited = (int*)malloc(sizeof(int) * graph->vertices);
 
-	int i;
-	for(i=0;i<v;i++)
-		graph->array[i].head = NULL;
+    for (int i = 0; i < graph->vertices; ++i)
+        visited[i] = 0;
 
-	return graph;
+    visited[startVertex] = 1;
+    enqueue(q, startVertex);
 
+    while (!isEmpty(q)) {
+        int currentVertex = dequeue(q);
+        printf("%d ", currentVertex);
+
+        struct Node* temp = graph->adjList[currentVertex];
+        while (temp != NULL) {
+            int adjVertex = temp->data;
+            if (!visited[adjVertex]) {
+                visited[adjVertex] = 1;
+                enqueue(q, adjVertex);
+            }
+            temp = temp->next;
+        }
+    }
+
+    free(visited);
+    free(q);
 }
 
-void addEdge(struct Graph* graph, int src, int dest)
-{
-	struct AdjListNode* newNode = newAdjListNode(dest);
-	newNode->next = graph->array[src].head;
-	graph->array[src].head = newNode;
+// Function to add an edge to the graph
+void addEdge(struct Graph* graph, int src, int dest) {
+    struct Node* newNode = newAdjNode(dest);
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
 
-	newNode = newAdjListNode(src);
-	newNode->next = graph->array[dest].head;
-	graph->array[dest].head = newNode;
+    newNode = newAdjNode(src);
+    newNode->next = graph->adjList[dest];
+    graph->adjList[dest] = newNode;
 }
 
-void BFS(struct Graph* graph,int s)//Breadth First Traversal
-{
-	int i;
-	struct AdjListNode* crawl;
-	int *visited = (int *)malloc(sizeof(int)*graph->v);
+// Function to create a graph
+struct Graph* createGraph(int vertices) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->vertices = vertices;
+    graph->adjList = (struct Node**)malloc(vertices * sizeof(struct Node*));
 
-	for(i=0;i<graph->v;i++)
-		visited[i] = 0;
+    for (int i = 0; i < vertices; ++i)
+        graph->adjList[i] = NULL;
 
-	visited[s] = 1;
-	enqueue(s);
-
-	while(!isempty())
-	{
-
-		s = pfront();
-		printf("%d ",s);
-		dequeue();
-
-		for(crawl=graph->array[s].head;crawl;crawl = crawl->next)
-		{
-			if(!visited[crawl->dest])
-			{
-				visited[crawl->dest] = 1;
-				enqueue(crawl->dest);
-			}
-		}
-	}
+    return graph;
 }
 
-int main()
-{
-	int v=5;
+int main() {
+    int vertices = 5;
+    struct Graph* graph = createGraph(vertices);
 
-	struct Graph* graph = createGrpah(v);
-	addEdge(graph, 0, 1);
-	addEdge(graph, 0, 4);
-	addEdge(graph, 1, 2);
-	addEdge(graph, 1, 3);
-	addEdge(graph, 1, 4);
-	addEdge(graph, 2, 3);
-	addEdge(graph, 3, 4);
+    addEdge(graph, 0, 1);
+    addEdge(graph, 0, 2);
+    addEdge(graph, 1, 2);
+    addEdge(graph, 1, 3);
+    addEdge(graph, 2, 4);
+    addEdge(graph, 3, 4);
 
-	printf("\nBreadth First Traversal starting from 0 \n");
-	BFS(graph,0);
-	
-	return 0;
+    printf("\nBreadth First Traversal starting from 0 \n");
+    BFS(graph, 0);
+
+    return 0;
 }
