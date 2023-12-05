@@ -1,97 +1,58 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-struct Node {
-    int dest;
-    struct Node* next;
-};
+#define MAX_VERTICES 100
 
-struct AdjList {
-    struct Node* head;
-};
+void dfs(int graph[MAX_VERTICES][MAX_VERTICES], int visited[MAX_VERTICES], int num_vertices, int node) {
+    if (!visited[node]) {
+        printf("%d ", node);
+        visited[node] = 1;
 
-struct Graph {
-    int v;
-    struct AdjList* array;
-};
-
-struct Node* createNode(int dest) {
-    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
-    newNode->dest = dest;
-    newNode->next = NULL;
-    return newNode;
-}
-
-struct Graph* createGraph(int v) {
-    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
-    graph->v = v;
-    graph->array = (struct AdjList*)malloc(v * sizeof(struct AdjList));
-
-    for (int i = 0; i < v; ++i)
-        graph->array[i].head = NULL;
-
-    return graph;
-}
-
-void addEdge(struct Graph* graph, int src, int dest) {
-    struct Node* newNode = createNode(dest);
-    newNode->next = graph->array[src].head;
-    graph->array[src].head = newNode;
-
-    newNode = createNode(src);
-    newNode->next = graph->array[dest].head;
-    graph->array[dest].head = newNode;
-}
-
-void DFSUtil(struct Graph* graph, int v, int visited[]) {
-    visited[v] = 1;
-    printf("%d ", v);
-
-    struct Node* crawl = graph->array[v].head;
-    while (crawl) {
-        int adjVertex = crawl->dest;
-        if (!visited[adjVertex]) {
-            DFSUtil(graph, adjVertex, visited);
+        for (int i = 0; i < num_vertices; i++) {
+            if (graph[node][i] && !visited[i]) {
+                dfs(graph, visited, num_vertices, i);
+            }
         }
-        crawl = crawl->next;
     }
-}
-
-void DFS(struct Graph* graph, int startVertex) {
-    int* visited = (int*)malloc(graph->v * sizeof(int));
-
-    for (int i = 0; i < graph->v; ++i)
-        visited[i] = 0;
-
-    DFSUtil(graph, startVertex, visited);
-
-    free(visited);
 }
 
 int main() {
-    int vertices, edges;
+    int num_vertices, num_edges;
 
+    // Get the number of vertices and edges from the user
     printf("Enter the number of vertices: ");
-    scanf("%d", &vertices);
-
-    struct Graph* graph = createGraph(vertices);
+    scanf("%d", &num_vertices);
 
     printf("Enter the number of edges: ");
-    scanf("%d", &edges);
+    scanf("%d", &num_edges);
 
-    printf("Enter the edges (src dest):\n");
-    for (int i = 0; i < edges; ++i) {
-        int src, dest;
-        scanf("%d %d", &src, &dest);
-        addEdge(graph, src, dest);
+    int graph[MAX_VERTICES][MAX_VERTICES];
+    int visited[MAX_VERTICES];
+
+    // Initialize the adjacency matrix and visited array
+    for (int i = 0; i < num_vertices; i++) {
+        visited[i] = 0;
+        for (int j = 0; j < num_vertices; j++) {
+            graph[i][j] = 0;
+        }
     }
 
-    int startVertex;
-    printf("Enter the starting vertex for DFS: ");
-    scanf("%d", &startVertex);
+    // Input the edges
+    printf("Enter the edges (vertex pairs connected by an edge):\n");
+    for (int k = 0; k < num_edges; k++) {
+        int vertex1, vertex2;
+        printf("Edge %d: ", k + 1);
+        scanf("%d %d", &vertex1, &vertex2);
+        graph[vertex1][vertex2] = graph[vertex2][vertex1] = 1;  // Assuming an undirected graph
+    }
 
-    printf("Depth First Traversal starting from %d\n", startVertex);
-    DFS(graph, startVertex);
+    // Choose a starting node for DFS
+    int start_node;
+    printf("Enter the starting node for DFS: ");
+    scanf("%d", &start_node);
+
+    printf("DFS traversal starting from node %d: ", start_node);
+    dfs(graph, visited, num_vertices, start_node);
+    printf("\n");
 
     return 0;
 }
