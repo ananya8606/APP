@@ -1,32 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_VERTICES 5
+#define MAX_VERTICES 100
 
-// Node for adjacency list
 struct Node {
     int data;
     struct Node* next;
 };
 
-// Queue node
 struct QueueNode {
     int data;
     struct QueueNode* next;
 };
 
-// Queue structure
 struct Queue {
     struct QueueNode *front, *rear;
 };
 
-// Graph structure
 struct Graph {
     int vertices;
     struct Node** adjList;
 };
 
-// Function to create a new node for adjacency list
 struct Node* newAdjNode(int dest) {
     struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
     newNode->data = dest;
@@ -34,19 +29,16 @@ struct Node* newAdjNode(int dest) {
     return newNode;
 }
 
-// Function to initialize a new queue
 struct Queue* createQueue() {
     struct Queue* q = (struct Queue*)malloc(sizeof(struct Queue));
     q->front = q->rear = NULL;
     return q;
 }
 
-// Function to check if the queue is empty
 int isEmpty(struct Queue* q) {
     return (q->front == NULL);
 }
 
-// Function to enqueue a data into the queue
 void enqueue(struct Queue* q, int data) {
     struct QueueNode* temp = (struct QueueNode*)malloc(sizeof(struct QueueNode));
     temp->data = data;
@@ -61,7 +53,6 @@ void enqueue(struct Queue* q, int data) {
     q->rear = temp;
 }
 
-// Function to dequeue a data from the queue
 int dequeue(struct Queue* q) {
     if (isEmpty(q))
         return -1;
@@ -74,7 +65,6 @@ int dequeue(struct Queue* q) {
     return data;
 }
 
-// Function to perform Breadth-First Search
 void BFS(struct Graph* graph, int startVertex) {
     struct Queue* q = createQueue();
     int* visited = (int*)malloc(sizeof(int) * graph->vertices);
@@ -104,7 +94,6 @@ void BFS(struct Graph* graph, int startVertex) {
     free(q);
 }
 
-// Function to add an edge to the graph
 void addEdge(struct Graph* graph, int src, int dest) {
     struct Node* newNode = newAdjNode(dest);
     newNode->next = graph->adjList[src];
@@ -115,7 +104,6 @@ void addEdge(struct Graph* graph, int src, int dest) {
     graph->adjList[dest] = newNode;
 }
 
-// Function to create a graph
 struct Graph* createGraph(int vertices) {
     struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
     graph->vertices = vertices;
@@ -128,18 +116,29 @@ struct Graph* createGraph(int vertices) {
 }
 
 int main() {
-    int vertices = 5;
+    int vertices, edges;
+
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
     struct Graph* graph = createGraph(vertices);
 
-    addEdge(graph, 0, 1);
-    addEdge(graph, 0, 2);
-    addEdge(graph, 1, 2);
-    addEdge(graph, 1, 3);
-    addEdge(graph, 2, 4);
-    addEdge(graph, 3, 4);
+    printf("Enter the edges (src dest):\n");
+    for (int i = 0; i < edges; ++i) {
+        int src, dest;
+        scanf("%d %d", &src, &dest);
+        addEdge(graph, src, dest);
+    }
 
-    printf("\nBreadth First Traversal starting from 0 \n");
-    BFS(graph, 0);
+    int startVertex;
+    printf("Enter the starting vertex for BFS: ");
+    scanf("%d", &startVertex);
+
+    printf("\nBreadth First Traversal starting from %d\n", startVertex);
+    BFS(graph, startVertex);
 
     return 0;
 }
