@@ -1,94 +1,97 @@
 #include <stdio.h>
-#include "stdlib.h"
-//Depth First Search
-struct Graph
-{
-	int v;
-	struct AdjList* array;
+#include <stdlib.h>
+
+struct Node {
+    int dest;
+    struct Node* next;
 };
 
-struct AdjList
-{
-	struct  AdjListNode* head;
+struct AdjList {
+    struct Node* head;
 };
 
-struct AdjListNode
-{
-	int dest;
-	struct AdjListNode* next;
+struct Graph {
+    int v;
+    struct AdjList* array;
 };
 
-void DFSutil(struct Graph* graph,int v,int visited[])
-{
-	visited[v] = 1;
-	printf("%d ",v);
-
-	struct AdjListNode* crawl;
-
-	for(crawl=graph->array[v].head; crawl!=NULL; crawl = crawl->next)
-	{
-		if(!visited[crawl->dest])
-			DFSutil(graph,crawl->dest,visited);
-	}
+struct Node* createNode(int dest) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->dest = dest;
+    newNode->next = NULL;
+    return newNode;
 }
 
-void DFS(struct Graph* graph,int v)
-{
-	int *visited = (int *)malloc(sizeof(int)*graph->v);
-	int i;
-	for(i=0;i<graph->v;i++)
-		visited[i] = 0;
+struct Graph* createGraph(int v) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->v = v;
+    graph->array = (struct AdjList*)malloc(v * sizeof(struct AdjList));
 
-	DFSutil(graph,v,visited);
+    for (int i = 0; i < v; ++i)
+        graph->array[i].head = NULL;
+
+    return graph;
 }
 
-struct Graph* Creategraph(int v)
-{
-	int i;
-	struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
-	graph->v = v;
-	graph->array = (struct AdjList*)malloc(sizeof(struct AdjList)*v);
+void addEdge(struct Graph* graph, int src, int dest) {
+    struct Node* newNode = createNode(dest);
+    newNode->next = graph->array[src].head;
+    graph->array[src].head = newNode;
 
-	for(i=0;i<v;i++)
-		graph->array[i].head = NULL;
-
-	return graph;
+    newNode = createNode(src);
+    newNode->next = graph->array[dest].head;
+    graph->array[dest].head = newNode;
 }
 
-struct AdjListNode* createAdjListNode(int dest)
-{
-	struct AdjListNode* new = (struct AdjListNode*)malloc(sizeof(struct AdjListNode));
-	new->dest = dest;
-	new->next = NULL;
+void DFSUtil(struct Graph* graph, int v, int visited[]) {
+    visited[v] = 1;
+    printf("%d ", v);
 
-	return new;
+    struct Node* crawl = graph->array[v].head;
+    while (crawl) {
+        int adjVertex = crawl->dest;
+        if (!visited[adjVertex]) {
+            DFSUtil(graph, adjVertex, visited);
+        }
+        crawl = crawl->next;
+    }
 }
 
-void addEdge(struct Graph* graph,int src,int dest)
-{
-	struct AdjListNode* newnode = createAdjListNode(dest);
-	newnode->next = graph->array[src].head;
-	graph->array[src].head = newnode;
+void DFS(struct Graph* graph, int startVertex) {
+    int* visited = (int*)malloc(graph->v * sizeof(int));
 
-	newnode = createAdjListNode(src);
-	newnode->next = graph->array[dest].head;
-	graph->array[dest].head = newnode;
+    for (int i = 0; i < graph->v; ++i)
+        visited[i] = 0;
+
+    DFSUtil(graph, startVertex, visited);
+
+    free(visited);
 }
 
-int main()
-{
-	struct Graph* graph = Creategraph(5);
+int main() {
+    int vertices, edges;
 
-	addEdge(graph, 0, 1);
-	addEdge(graph, 0, 4);
-	addEdge(graph, 1, 2);
-	addEdge(graph, 1, 3);
-	addEdge(graph, 1, 4);
-	addEdge(graph, 2, 3);
-	addEdge(graph, 3, 4);
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
 
-	printf("Depth First Traversal staring from 0\n");
-	DFS(graph,0);
+    struct Graph* graph = createGraph(vertices);
 
-	return 0;
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
+    printf("Enter the edges (src dest):\n");
+    for (int i = 0; i < edges; ++i) {
+        int src, dest;
+        scanf("%d %d", &src, &dest);
+        addEdge(graph, src, dest);
+    }
+
+    int startVertex;
+    printf("Enter the starting vertex for DFS: ");
+    scanf("%d", &startVertex);
+
+    printf("Depth First Traversal starting from %d\n", startVertex);
+    DFS(graph, startVertex);
+
+    return 0;
 }
