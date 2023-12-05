@@ -3,6 +3,11 @@
 
 #define MAX_VERTICES 100
 
+struct Edge
+{
+    int src, dest, weight;
+};
+
 struct subset
 {
     int parent;
@@ -33,32 +38,23 @@ void Union(struct subset subsets[], int x, int y)
     }
 }
 
-int scompare(const void *a, const void *b)
+int edgeComparator(const void *a, const void *b)
 {
-    struct Edge *na = (struct Edge *)a;
-    struct Edge *nb = (struct Edge *)b;
-
-    return na->weight - nb->weight;
+    return ((struct Edge *)a)->weight - ((struct Edge *)b)->weight;
 }
 
-void MST_kruskal(int v, int adjMatrix[MAX_VERTICES][MAX_VERTICES], int e)
+void MST_Kruskal(int v, int adjMatrix[MAX_VERTICES][MAX_VERTICES], int e)
 {
-    struct Edge result[v];
+    struct Edge *edges = (struct Edge *)malloc(e * sizeof(struct Edge));
 
     int edgeCount = 0;
-    int i = 0;
 
     struct subset *subsets = (struct subset *)malloc(v * sizeof(struct subset));
-
-    for (i = 0; i < v; i++)
+    for (int i = 0; i < v; i++)
     {
         subsets[i].parent = i;
         subsets[i].rank = 0;
     }
-    i = 0;
-
-    // Create an array of edges for sorting
-    struct Edge *edges = (struct Edge *)malloc(e * sizeof(struct Edge));
 
     for (int row = 0; row < v; row++)
     {
@@ -66,36 +62,42 @@ void MST_kruskal(int v, int adjMatrix[MAX_VERTICES][MAX_VERTICES], int e)
         {
             if (adjMatrix[row][col] != 0)
             {
-                edges[i].src = row;
-                edges[i].dest = col;
-                edges[i].weight = adjMatrix[row][col];
-                i++;
+                edges[edgeCount].src = row;
+                edges[edgeCount].dest = col;
+                edges[edgeCount].weight = adjMatrix[row][col];
+                edgeCount++;
             }
         }
     }
 
-    // Sort edges according to their weight/length using library function qsort()
-    qsort(edges, e, sizeof(edges[0]), scompare);
+    qsort(edges, e, sizeof(edges[0]), edgeComparator);
 
-    // As in a minimum spanning tree, the number of edges is n-1.
-    while (edgeCount < v - 1)
+    struct Edge *result = (struct Edge *)malloc((v - 1) * sizeof(struct Edge));
+
+    int i = 0, j = 0;
+
+    while (i < v - 1 && j < e)
     {
-        struct Edge crawl = edges[i++];
+        struct Edge nextEdge = edges[j++];
 
-        int x = find(subsets, crawl.src);
-        int y = find(subsets, crawl.dest);
+        int x = find(subsets, nextEdge.src);
+        int y = find(subsets, nextEdge.dest);
 
-        if (x != y) // Avoid cycles
+        if (x != y)
         {
-            result[edgeCount++] = crawl;
+            result[i++] = nextEdge;
             Union(subsets, x, y);
         }
     }
 
     printf("Following edges are there in MST\n");
     printf("src--dest=weight\n");
-    for (i = 0; i < edgeCount; i++)
+    for (i = 0; i < v - 1; i++)
         printf("%d--%d=%d\n", result[i].src, result[i].dest, result[i].weight);
+
+    free(edges);
+    free(result);
+    free(subsets);
 }
 
 int main()
@@ -118,7 +120,7 @@ int main()
         adjMatrix[dest][src] = weight;
     }
 
-    MST_kruskal(v, adjMatrix, e);
+    MST_Kruskal(v, adjMatrix, e);
 
     return 0;
 }
