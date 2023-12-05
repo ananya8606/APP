@@ -12,11 +12,6 @@ struct Queue {
     struct QueueNode *front, *rear;
 };
 
-struct Graph {
-    int vertices;
-    int** adjMatrix;
-};
-
 struct Queue* createQueue() {
     struct Queue* q = (struct Queue*)malloc(sizeof(struct Queue));
     q->front = q->rear = NULL;
@@ -53,11 +48,11 @@ int dequeue(struct Queue* q) {
     return data;
 }
 
-void BFS(struct Graph* graph, int startVertex) {
+void BFS(int** adjMatrix, int vertices, int startVertex) {
     struct Queue* q = createQueue();
-    int* visited = (int*)malloc(sizeof(int) * graph->vertices);
+    int* visited = (int*)malloc(sizeof(int) * vertices);
 
-    for (int i = 0; i < graph->vertices; ++i)
+    for (int i = 0; i < vertices; ++i)
         visited[i] = 0;
 
     visited[startVertex] = 1;
@@ -67,8 +62,8 @@ void BFS(struct Graph* graph, int startVertex) {
         int currentVertex = dequeue(q);
         printf("%d ", currentVertex);
 
-        for (int i = 0; i < graph->vertices; ++i) {
-            if (graph->adjMatrix[currentVertex][i] && !visited[i]) {
+        for (int i = 0; i < vertices; ++i) {
+            if (adjMatrix[currentVertex][i] && !visited[i]) {
                 visited[i] = 1;
                 enqueue(q, i);
             }
@@ -79,42 +74,29 @@ void BFS(struct Graph* graph, int startVertex) {
     free(q);
 }
 
-struct Graph* createGraph(int vertices) {
-    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
-    graph->vertices = vertices;
-    graph->adjMatrix = (int**)malloc(vertices * sizeof(int*));
-
-    for (int i = 0; i < vertices; ++i) {
-        graph->adjMatrix[i] = (int*)malloc(vertices * sizeof(int));
-        for (int j = 0; j < vertices; ++j) {
-            graph->adjMatrix[i][j] = 0;
-        }
-    }
-
-    return graph;
-}
-
-void addEdge(struct Graph* graph, int src, int dest) {
-    graph->adjMatrix[src][dest] = 1;
-    graph->adjMatrix[dest][src] = 1;
-}
-
 int main() {
     int vertices, edges;
 
     printf("Enter the number of vertices: ");
     scanf("%d", &vertices);
 
+    int** adjMatrix = (int**)malloc(vertices * sizeof(int*));
+    for (int i = 0; i < vertices; ++i) {
+        adjMatrix[i] = (int*)malloc(vertices * sizeof(int));
+        for (int j = 0; j < vertices; ++j) {
+            adjMatrix[i][j] = 0;
+        }
+    }
+
     printf("Enter the number of edges: ");
     scanf("%d", &edges);
-
-    struct Graph* graph = createGraph(vertices);
 
     printf("Enter the edges (src dest):\n");
     for (int i = 0; i < edges; ++i) {
         int src, dest;
         scanf("%d %d", &src, &dest);
-        addEdge(graph, src, dest);
+        adjMatrix[src][dest] = 1;
+        adjMatrix[dest][src] = 1;
     }
 
     int startVertex;
@@ -122,7 +104,12 @@ int main() {
     scanf("%d", &startVertex);
 
     printf("\nBreadth First Traversal starting from %d\n", startVertex);
-    BFS(graph, startVertex);
+    BFS(adjMatrix, vertices, startVertex);
+
+    for (int i = 0; i < vertices; ++i) {
+        free(adjMatrix[i]);
+    }
+    free(adjMatrix);
 
     return 0;
 }
