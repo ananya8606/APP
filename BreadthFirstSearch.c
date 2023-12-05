@@ -3,11 +3,6 @@
 
 #define MAX_VERTICES 100
 
-struct Node {
-    int data;
-    struct Node* next;
-};
-
 struct QueueNode {
     int data;
     struct QueueNode* next;
@@ -19,15 +14,8 @@ struct Queue {
 
 struct Graph {
     int vertices;
-    struct Node** adjList;
+    int** adjMatrix;
 };
-
-struct Node* newAdjNode(int dest) {
-    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
-    newNode->data = dest;
-    newNode->next = NULL;
-    return newNode;
-}
 
 struct Queue* createQueue() {
     struct Queue* q = (struct Queue*)malloc(sizeof(struct Queue));
@@ -79,14 +67,11 @@ void BFS(struct Graph* graph, int startVertex) {
         int currentVertex = dequeue(q);
         printf("%d ", currentVertex);
 
-        struct Node* temp = graph->adjList[currentVertex];
-        while (temp != NULL) {
-            int adjVertex = temp->data;
-            if (!visited[adjVertex]) {
-                visited[adjVertex] = 1;
-                enqueue(q, adjVertex);
+        for (int i = 0; i < graph->vertices; ++i) {
+            if (graph->adjMatrix[currentVertex][i] && !visited[i]) {
+                visited[i] = 1;
+                enqueue(q, i);
             }
-            temp = temp->next;
         }
     }
 
@@ -94,25 +79,24 @@ void BFS(struct Graph* graph, int startVertex) {
     free(q);
 }
 
-void addEdge(struct Graph* graph, int src, int dest) {
-    struct Node* newNode = newAdjNode(dest);
-    newNode->next = graph->adjList[src];
-    graph->adjList[src] = newNode;
-
-    newNode = newAdjNode(src);
-    newNode->next = graph->adjList[dest];
-    graph->adjList[dest] = newNode;
-}
-
 struct Graph* createGraph(int vertices) {
     struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
     graph->vertices = vertices;
-    graph->adjList = (struct Node**)malloc(vertices * sizeof(struct Node*));
+    graph->adjMatrix = (int**)malloc(vertices * sizeof(int*));
 
-    for (int i = 0; i < vertices; ++i)
-        graph->adjList[i] = NULL;
+    for (int i = 0; i < vertices; ++i) {
+        graph->adjMatrix[i] = (int*)malloc(vertices * sizeof(int));
+        for (int j = 0; j < vertices; ++j) {
+            graph->adjMatrix[i][j] = 0;
+        }
+    }
 
     return graph;
+}
+
+void addEdge(struct Graph* graph, int src, int dest) {
+    graph->adjMatrix[src][dest] = 1;
+    graph->adjMatrix[dest][src] = 1;
 }
 
 int main() {
