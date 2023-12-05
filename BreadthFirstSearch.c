@@ -48,12 +48,9 @@ int dequeue(struct Queue* q) {
     return data;
 }
 
-void BFS(int** adjMatrix, int vertices, int startVertex) {
+void BFS(int adjMatrix[MAX_VERTICES][MAX_VERTICES], int vertices, int startVertex) {
     struct Queue* q = createQueue();
-    int* visited = (int*)malloc(sizeof(int) * vertices);
-
-    for (int i = 0; i < vertices; ++i)
-        visited[i] = 0;
+    int visited[MAX_VERTICES] = {0};
 
     visited[startVertex] = 1;
     enqueue(q, startVertex);
@@ -70,7 +67,6 @@ void BFS(int** adjMatrix, int vertices, int startVertex) {
         }
     }
 
-    free(visited);
     free(q);
 }
 
@@ -80,13 +76,7 @@ int main() {
     printf("Enter the number of vertices: ");
     scanf("%d", &vertices);
 
-    int** adjMatrix = (int**)malloc(vertices * sizeof(int*));
-    for (int i = 0; i < vertices; ++i) {
-        adjMatrix[i] = (int*)malloc(vertices * sizeof(int));
-        for (int j = 0; j < vertices; ++j) {
-            adjMatrix[i][j] = 0;
-        }
-    }
+    int adjMatrix[MAX_VERTICES][MAX_VERTICES] = {0};
 
     printf("Enter the number of edges: ");
     scanf("%d", &edges);
@@ -105,11 +95,6 @@ int main() {
 
     printf("\nBreadth First Traversal starting from %d\n", startVertex);
     BFS(adjMatrix, vertices, startVertex);
-
-    for (int i = 0; i < vertices; ++i) {
-        free(adjMatrix[i]);
-    }
-    free(adjMatrix);
 
     return 0;
 }
