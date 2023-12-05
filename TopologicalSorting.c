@@ -1,134 +1,102 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Topological sorting
-// reference GFG and nptel
-
 struct Stack
 {
-	int data;
-	struct Stack* next;
+    int data;
+    struct Stack *next;
 };
 
-struct Stack* stop = NULL;// top of stack
-
-struct Graph
-{
-	int v;
-	struct AdjList* array;
-};
-
-struct AdjList
-{
-	struct edge* head;
-};
-
-struct edge
-{
-	int dest;
-	struct edge* next;
-};
+struct Stack *stop = NULL; // top of stack
 
 int isempty()
 {
-	if(stop==NULL)
-		return 1;
-	else
-		return 0;
+    return stop == NULL ? 1 : 0;
 }
 
 void push(int data)
 {
-	struct Stack* newnode = (struct Stack*)malloc(sizeof(struct Stack));
-	newnode->data = data;
-	newnode->next = stop;
-	stop = newnode;
+    struct Stack *newnode = (struct Stack *)malloc(sizeof(struct Stack));
+    newnode->data = data;
+    newnode->next = stop;
+    stop = newnode;
 }
 
 void pop()
 {
-	if(stop==NULL)
-		return;
+    if (stop == NULL)
+        return;
 
-	struct Stack* node = stop;
-	stop = stop->next;
-	free(node);
+    struct Stack *node = stop;
+    stop = stop->next;
+    free(node);
 }
 
 int top()
 {
-	return stop->data;
+    return stop->data;
 }
 
-struct Graph* createGraph(int v)
+void tSortutil(int v, int size, int adjMatrix[size][size], int visited[])
 {
-	struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
-	graph->v = v;
-	graph->array = (struct AdjList*)malloc(sizeof(struct AdjList)*v);
+    visited[v] = 1;
 
-	for(int i=0; i<v; i++)
-		graph->array[i].head = NULL;
+    for (int i = 0; i < size; i++)
+    {
+        if (adjMatrix[v][i] && !visited[i])
+            tSortutil(i, size, adjMatrix, visited);
+    }
 
-	return graph;
+    push(v);
 }
 
-void addEdge(struct Graph* graph, int src, int dest)
+void TopologicalSort(int size, int adjMatrix[size][size])
 {
-	struct edge* newnode = (struct edge*)malloc(sizeof(struct edge));
-	newnode->dest = dest;
+    stop = NULL; // creating a stack
+    int *visited = (int *)malloc(size * sizeof(int));
 
-	newnode->next = graph->array[src].head;
-	graph->array[src].head = newnode;
-}
+    for (int i = 0; i < size; i++)
+        visited[i] = 0;
 
-void tSortutil(struct Graph* graph, int v, int visited[])
-{
-	visited[v] = 1;
+    for (int i = 0; i < size; i++)
+    {
+        if (visited[i] == 0)
+            tSortutil(i, size, adjMatrix, visited);
+    }
 
-	struct edge* crawl =NULL;
-	for(crawl = graph->array[v].head; crawl; crawl = crawl->next)
-	{
-		if(!visited[crawl->dest])
-			tSortutil(graph, crawl->dest, visited);
-	}
+    printf("Topological Sort for the given graph is: ");
 
-	push(v);
-}
-
-void TopologicalSort(struct Graph* graph)
-{
-	stop = NULL; // creating a stack
-	int *visited = (int *)malloc(sizeof(int)*graph->v);
-
-	for(int i=0; i<graph->v; i++)
-		visited[i] = 0;
-
-	for(int i=0; i<graph->v; i++)
-	{
-		if(visited[i] == 0)
-			tSortutil(graph,i,visited);
-	}
-
-	while(!isempty())
-	{
-		printf("%d ",top());
-		pop();
-	}
+    while (!isempty())
+    {
+        printf("%d ", top());
+        pop();
+    }
 }
 
 int main()
 {
-	struct Graph* graph = createGraph(6);
+    int size, e;
+    printf("Enter the number of vertices: ");
+    scanf("%d", &size);
 
-	addEdge(graph,5, 2);
-    addEdge(graph,5, 0);
-    addEdge(graph,4, 0);
-    addEdge(graph,4, 1);
-    addEdge(graph,2, 3);
-    addEdge(graph,3, 1);
+    int adjMatrix[size][size];
 
-    printf("Topological Sort for given graph is: ");
+    for (int i = 0; i < size; i++)
+        for (int j = 0; j < size; j++)
+            adjMatrix[i][j] = 0;
 
-    TopologicalSort(graph);
-	return 0;
+    printf("Enter the number of edges: ");
+    scanf("%d", &e);
+
+    printf("Enter edges (src dest):\n");
+    for (int i = 0; i < e; i++)
+    {
+        int src, dest;
+        scanf("%d %d", &src, &dest);
+        adjMatrix[src][dest] = 1;
+    }
+
+    TopologicalSort(size, adjMatrix);
+
+    return 0;
 }
